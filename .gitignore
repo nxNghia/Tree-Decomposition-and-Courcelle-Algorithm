@@ -3,3 +3,8 @@ note
 Reduction Algorithms for Graphs of Small Treewidth1.pdf
 Vertex\ Cover/input.txt
 Vertex\ Cover/input2.txt
+Vertex\ Cover/vertexCover
+Vertex\ Cover/vertexCover.o
+Independent\ set/input.txt
+Independent\ set/MaximumIndependentSetOfForest.o
+Independent\ set/MaximumIndependentSetOfForest

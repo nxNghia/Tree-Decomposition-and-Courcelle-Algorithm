@@ -7,7 +7,7 @@
 using namespace std;
 
 int _k;
-int _edge;
+int _vertices;
 
 class edge
 {
@@ -42,7 +42,7 @@ bool smallVertexCover (vector<edge*> edges, set<int> checks, int k)
 			++count;
 	}
 
-	if (count == 0)
+	if (count == 0 && checks.size() == _k)
 	{
 		for (auto x : checks)
 			cout << x << ' ';
@@ -50,7 +50,7 @@ bool smallVertexCover (vector<edge*> edges, set<int> checks, int k)
 		return true;
 	}
 
-	if (count / 2 > k * (_edge - checks.size()))
+	if (count / 2 > k * (_vertices - checks.size()))
 		return false;
 
 	for (auto edge : edges)
@@ -92,7 +92,7 @@ int main(int argc, const char** argv)
 	{
 		if (num == 0)
 		{
-			++_edge;
+			++_vertices;
 			row = node;
 
 			f >> num;
