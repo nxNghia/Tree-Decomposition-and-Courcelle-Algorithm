@@ -1,0 +1,2 @@
+maxWeightIndependentSet: MaximumWeightIndependentSetOnTree.o
+	g++ -o maxWeightIndependentSet MaximumWeightIndependentSetOnTree.cpp
