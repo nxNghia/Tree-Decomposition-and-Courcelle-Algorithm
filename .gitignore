@@ -6,5 +6,9 @@ Vertex\ Cover/input2.txt
 Vertex\ Cover/vertexCover
 Vertex\ Cover/vertexCover.o
 Independent\ set/input.txt
-Independent\ set/MaximumIndependentSetOfForest.o
-Independent\ set/maxIndependentSet
+Independent\ set/Maximum\ Independent\ Set\ Of\ Forest/MaximumIndependentSetOfForest.o
+Independent\ set/Maximum\ Independent\ Set\ Of\ Forest/maxIndependentSet
+Independent\ set/Maximum\ Independent\ Set\ Of\ Forest/input.txt
+Independent\ set/Maximum\ Weight\ Independent\ Set\ On\ Tree/MaximumWeightIndependentSetOnTree.o
+Independent\ set/Maximum\ Weight\ Independent\ Set\ On\ Tree/maxWeightIndependentSet
+Independent\ set/Maximum\ Weight\ Independent\ Set\ On\ Tree/input.txt
