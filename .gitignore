@@ -12,3 +12,7 @@ Independent\ set/Maximum\ Independent\ Set\ Of\ Forest/input.txt
 Independent\ set/Maximum\ Weight\ Independent\ Set\ On\ Tree/MaximumWeightIndependentSetOnTree.o
 Independent\ set/Maximum\ Weight\ Independent\ Set\ On\ Tree/maxWeightIndependentSet
 Independent\ set/Maximum\ Weight\ Independent\ Set\ On\ Tree/input.txt
+Decomposition\ Tree\ Algorithm/DecompositionTree.o
+Decomposition\ Tree\ Algorithm/DecompositionTree
+Decomposition\ Tree\ Algorithm/input.txt
+*.pdf
