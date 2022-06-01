@@ -12,6 +12,8 @@ class Graph
 	public:
 		map<int, vector<int>> vertices;
 		map<int, int> fillIn;
+		vector<vector<int>> k;
+		vector<int> eliminationOrder;
 
 		void addVertice (int index, int parent)
 		{
@@ -93,7 +95,7 @@ class Graph
 			return result;
 		}
 
-		int findFillIn (vector<int> adjencies)
+		int findFillIn (int index, vector<int> adjencies)
 		{
 			int edges = 0;
 
@@ -104,6 +106,9 @@ class Graph
 
 				edges += common.size();
 
+				// cout << (char)(adjencies[i] + 'A') << ' ' << (char)(index + 'A') << ' ' << adjencies.size << endl;
+
+				this -> k[adjencies[i]][index] = adjencies.size() - common.size() - 1;
 			}
 
 			return adjencies.size() * (adjencies.size() - 1) / 2 - edges / 2;
@@ -113,7 +118,12 @@ class Graph
 		{
 			for (int i = 0; i < this -> vertices.size(); ++i)
 			{
-				this -> fillIn[i] = findFillIn (this -> vertices[i]);
+				vector<int> t (this -> vertices.size(), -1);
+				this -> k.push_back(t);
+			}
+			for (int i = 0; i < this -> vertices.size(); ++i)
+			{
+				this -> fillIn[i] = findFillIn (i, this -> vertices[i]);
 			}
 		}
 
@@ -122,6 +132,63 @@ class Graph
 			for (int i = 0; i < this -> fillIn.size(); ++i)
 			{
 				cout << (char)(i + 'A') << ' ' << this -> fillIn[i] << endl;
+			}
+		}
+
+		void showEliminationOrder ()
+		{
+			for (auto x : this -> eliminationOrder)
+			{
+				cout << (char)(x + 'A') << ' ';
+			}
+			cout << endl;
+		}
+
+		int getMin (set<int> marked)
+		{
+			int result = 0;
+
+			for (int i = 0; i < this -> fillIn.size(); ++i)
+			{
+				if (this -> fillIn[i] == 0 && marked.count(i) == 0)
+					return i;
+				if (this -> fillIn[i] <= this -> fillIn[result])
+				{
+					if (marked.count(i) == 0)
+						result = i;
+				}
+			}
+
+			return result;
+		}
+
+		void createEliminationOrder ()
+		{
+			set<int> marked;
+			int count = 0;
+
+			while (marked.size() != this -> vertices.size())
+			{
+				int minIndex = this -> getMin(marked);
+
+				for (int i = 0; i < this -> vertices.size(); ++i)
+				{
+					if (this -> k[minIndex][i] != -1 && marked.count(minIndex) == 0)
+					{
+						this -> fillIn[i] -= this -> k[minIndex][i];
+
+						for (int j = 0; j < this -> vertices.size(); ++j)
+						{
+							if (this -> k[j][i] != -1 && this -> k[j][minIndex] == -1 && marked.count(j) == 0)
+							{
+								this -> k[j][i] -= 1;
+							}
+						}
+					}
+				}
+
+				this -> eliminationOrder.push_back(minIndex);
+				marked.insert(minIndex);
 			}
 		}
 };
@@ -153,8 +220,13 @@ int main() {
 	f.close();
 
 	graph -> createFillIn();
-	cout << endl;
-	graph -> showFillIn();
+
+	graph -> createEliminationOrder();
+
+	graph -> showEliminationOrder();
+	// graph -> showFillIn();
+
+
 
 	// int a[5] = {0, 2, 4, 5, 6};
 	// int b[4] = {0, 1, 3, 4};
