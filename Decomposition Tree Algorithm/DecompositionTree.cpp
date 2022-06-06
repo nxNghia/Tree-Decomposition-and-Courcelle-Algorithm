@@ -127,8 +127,6 @@ class Graph
 
 				edges += common.size();
 
-				// cout << (char)(adjencies[i] + 'A') << ' ' << (char)(index + 'A') << ' ' << adjencies.size << endl;
-
 				this -> k[adjencies[i]][index] = adjencies.size() - common.size() - 1;
 			}
 
@@ -167,10 +165,15 @@ class Graph
 
 		int getMin (set<int> marked)
 		{
-			int result = 0;
+			int result = -1;
 
 			for (int i = 0; i < this -> fillIn.size(); ++i)
 			{
+				if (marked.count(i) != 0)
+					continue;
+				else
+					result = i;
+
 				if (this -> fillIn[i] == 0 && marked.count(i) == 0)
 					return i;
 				if (this -> fillIn[i] <= this -> fillIn[result])
@@ -189,7 +192,7 @@ class Graph
 			set<int> marked;
 			int count = 0;
 
-			while (marked.size() != this -> vertices.size())
+			while (marked.size() != this -> vertices.size() && count != 10)
 			{
 				int minIndex = this -> getMin(marked);
 
@@ -227,8 +230,8 @@ class dNode {
 		{
 			this -> id = id;
 			this -> block.push_back(id);
-			for (auto x : other)
-				this -> block.push_back(x);
+			for (auto x = other.rbegin(); x != other.rend(); ++x)
+				this -> block.push_back(*x);
 		}
 };
 
@@ -246,11 +249,6 @@ class dTree {
 		{
 			dNode* parent = this -> getNode(this -> root, p);
 
-			// cout << (char)(newNode + 'A') << ' ';
-			// for (auto x : other)
-			// 	cout << (char)(x + 'A') << ' ';
-			// cout << endl;
-
 			if (parent == NULL)
 			{
 				this -> root = new dNode(parent, newNode, other);
@@ -259,6 +257,58 @@ class dTree {
 
 				parent -> child.push_back(newdNode);
 			}
+		}
+
+		void createDotFile ()
+		{
+			dNode* tree = this -> root;
+			ofstream file;
+			file.open("result.dot");
+
+			file << "graph result {" << endl;
+
+			queue<dNode*> q;
+
+			q.push(tree);
+
+			while (!q.empty())
+			{
+				string line;
+				line += "	";
+				line.append(1, (char)('A' + q.front() -> id));
+				line += "[label=";
+				if (!q.front() -> block.empty())
+					line += "\"";
+				for (auto x : q.front() -> block)
+				{
+					line.append(1, (char)('A' + x));
+					line += " ";
+				}
+
+				line.pop_back();
+
+				line += "\"]";
+
+				file << line << ";" << endl;
+
+				line.clear();
+
+				for (auto x : q.front() -> child)
+				{
+
+					line += "	";
+					line.append(1, (char)(q.front() -> id + 'A'));
+					line += " -- ";
+					line.append(1, (char)(x -> id + 'A'));
+					file << line << ";" << endl;
+					line.clear();
+					q.push(x);
+				}
+
+				q.pop();
+			}
+
+			file << '}' << endl;
 		}
 
 		dNode* getNode (dNode* root, int index)
@@ -298,45 +348,33 @@ class dTree {
 			existed.push_back(s.top());
 			s.pop();
 
-
-			int count = 0;
-
-			// cout << "-------------------------------" << endl;
-
-			while (!s.empty() && count != 10)
+			while (!s.empty())
 			{
 				int top = s.top();
-
-				// cout << "top: " << (char)(top + 'A') << endl;
 
 				vector<int> adjencies1 = _graph_.vertices[top];
 
 				vector<int> common = findCommon(adjencies1, existed);
 
 				int minVertice = common[0];
+				int minValue = _graph_.revert[minVertice];
 
-				// for (auto x : adjencies1)
-				// 	cout << (char)(x + 'A') << ' ';
-				// cout << endl;
-
-				// for (auto x : existed)
-				// 	cout << (char)(x + 'A') << ' ';
-				// cout << endl;
-
-				// cout << "common: ";
-				// for (auto x : common)
-				// 	cout << (char)(x + 'A') << ' ';
-				// cout << endl;
-
-				// cout << (char)(minVertice + 'A') << '-' << (char)(top + 'A') << endl;
+				for (auto x : common)
+				{
+					if (minValue > _graph_.revert[x])
+					{
+						minValue = _graph_.revert[x];
+						minVertice = x;
+					}
+				}
 
 				this -> addVertice(minVertice, top, common);
-				// cout << "'-------------------------------------------" << endl;
 
 				existed.push_back(top);
 				s.pop();
-				++count;
 			}
+
+			this -> createDotFile();
 		}
 
 		void traversal ()
@@ -391,45 +429,8 @@ int main() {
 	f.close();
 
 	graph -> createFillIn();
-
 	graph -> createEliminationOrder();
 
 	dTree* tree = new dTree(&graph);
-
-	// graph -> showEliminationOrder();
 	tree -> createCompositionTree();
-
-	tree -> traversal();
-
-	// graph -> showFillIn();
-
-
-
-	// int a[5] = {0, 2, 4, 5, 6};
-	// int b[4] = {0, 1, 3, 4};
-
-	// int x = 0;
-	// int count = 0;
-
-	// for (int i = 0; i < 5; ++i)
-	// {
-	// 	cout << a[i] << ' ' << b[x] << endl;
-	// 	if (a[i] > b[x])
-	// 	{
-	// 		++x;
-	// 		--i;
-	// 		if (x > 4)
-	// 			break;
-	// 	}else{
-	// 		if (a[i] == b[x])
-	// 		{
-	// 			cout << " found " << endl;
-	// 			++count;
-	// 		}
-	// 	}
-	// }
-
-	// cout << count << endl;
-
-	// graph -> traversal(0);
 }
