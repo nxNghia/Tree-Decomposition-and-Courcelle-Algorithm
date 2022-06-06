@@ -4,8 +4,52 @@
 #include <vector>
 #include <queue>
 #include <set>
+#include <stack>
+#include <algorithm>
 
 using namespace std;
+
+vector<int> findCommon (vector<int> a, vector<int> b)
+{
+	vector<int> result;
+
+	sort(a.begin(), a.end());
+	sort(b.begin(), b.end());
+
+	while(!a.empty() && !b.empty())
+	{
+		if (a.back() == b.back())
+		{
+			result.push_back(a.back());
+			a.pop_back();
+			b.pop_back();
+		} else {
+			if (a.back() > b.back())
+			{
+				a.pop_back();
+			}else{
+				b.pop_back();
+			}
+		}
+	}
+
+	return result;
+}
+
+int getMin (vector<int> a)
+{
+	int min = a[0];
+
+	for (auto x : a)
+	{
+		if (x < min)
+		{
+			min = x;
+		}
+	}
+
+	return min;
+}
 
 class Graph
 {
@@ -14,6 +58,7 @@ class Graph
 		map<int, int> fillIn;
 		vector<vector<int>> k;
 		vector<int> eliminationOrder;
+		vector<int> revert;
 
 		void addVertice (int index, int parent)
 		{
@@ -71,30 +116,6 @@ class Graph
 			}
 		}
 
-		vector<int> findCommon (vector<int> a, vector<int> b)
-		{
-			vector<int> result;
-
-			while(!a.empty() && !b.empty())
-			{
-				if (a.back() == b.back())
-				{
-					result.push_back(a.back());
-					a.pop_back();
-					b.pop_back();
-				} else {
-					if (a.back() > b.back())
-					{
-						a.pop_back();
-					}else{
-						b.pop_back();
-					}
-				}
-			}
-
-			return result;
-		}
-
 		int findFillIn (int index, vector<int> adjencies)
 		{
 			int edges = 0;
@@ -102,7 +123,7 @@ class Graph
 			for (int i = 0; i < adjencies.size(); i++)
 			{
 				vector<int> _adjencies_ = this -> getVertex(adjencies[i]);
-				vector<int> common = this -> findCommon(adjencies, _adjencies_);
+				vector<int> common = findCommon(adjencies, _adjencies_);
 
 				edges += common.size();
 
@@ -164,6 +185,7 @@ class Graph
 
 		void createEliminationOrder ()
 		{
+			this -> revert.assign(this -> vertices.size(), 0);
 			set<int> marked;
 			int count = 0;
 
@@ -187,10 +209,159 @@ class Graph
 					}
 				}
 
+				this -> revert[minIndex] = count;
+				++count;
 				this -> eliminationOrder.push_back(minIndex);
 				marked.insert(minIndex);
 			}
 		}
+};
+
+class dNode {
+	public:
+		int id;
+		vector<dNode*> child;
+		vector<int> block;
+
+		dNode (dNode* p, int id, vector<int> other)
+		{
+			this -> id = id;
+			this -> block.push_back(id);
+			for (auto x : other)
+				this -> block.push_back(x);
+		}
+};
+
+class dTree {
+	public:
+		Graph** graph;
+		dNode* root;
+
+		dTree (Graph** graph)
+		{
+			this -> graph = graph;
+		}
+
+		void addVertice (int p, int newNode, vector<int> other)
+		{
+			dNode* parent = this -> getNode(this -> root, p);
+
+			// cout << (char)(newNode + 'A') << ' ';
+			// for (auto x : other)
+			// 	cout << (char)(x + 'A') << ' ';
+			// cout << endl;
+
+			if (parent == NULL)
+			{
+				this -> root = new dNode(parent, newNode, other);
+			} else {
+				dNode* newdNode = new dNode(parent, newNode, other);
+
+				parent -> child.push_back(newdNode);
+			}
+		}
+
+		dNode* getNode (dNode* root, int index)
+		{
+			if (root == NULL)
+				return NULL;
+			if (root -> id == index)
+				return root;
+			else{
+				if (root -> child.size() != 0)
+				{
+					for (auto x : root -> child)
+					{
+						dNode* result = this -> getNode(x, index);
+						if (result != NULL)
+						{
+							return result;
+						}
+					}
+				}
+			}
+
+			return NULL;
+		}
+
+		void createCompositionTree ()
+		{
+			vector<int> existed;
+			stack<int> s;
+			Graph _graph_ = **(this -> graph);
+
+			for (auto x : _graph_.eliminationOrder)
+				s.push(x);
+
+			vector<int> temp;
+			this -> addVertice(-1, s.top(), temp);
+			existed.push_back(s.top());
+			s.pop();
+
+
+			int count = 0;
+
+			// cout << "-------------------------------" << endl;
+
+			while (!s.empty() && count != 10)
+			{
+				int top = s.top();
+
+				// cout << "top: " << (char)(top + 'A') << endl;
+
+				vector<int> adjencies1 = _graph_.vertices[top];
+
+				vector<int> common = findCommon(adjencies1, existed);
+
+				int minVertice = common[0];
+
+				// for (auto x : adjencies1)
+				// 	cout << (char)(x + 'A') << ' ';
+				// cout << endl;
+
+				// for (auto x : existed)
+				// 	cout << (char)(x + 'A') << ' ';
+				// cout << endl;
+
+				// cout << "common: ";
+				// for (auto x : common)
+				// 	cout << (char)(x + 'A') << ' ';
+				// cout << endl;
+
+				// cout << (char)(minVertice + 'A') << '-' << (char)(top + 'A') << endl;
+
+				this -> addVertice(minVertice, top, common);
+				// cout << "'-------------------------------------------" << endl;
+
+				existed.push_back(top);
+				s.pop();
+				++count;
+			}
+		}
+
+		void traversal ()
+		{
+			queue<dNode*> q;
+
+			q.push(this -> root);
+
+			while (!q.empty())
+			{
+				for (auto x : q.front() -> block)
+				{
+					cout << (char)(x + 'A') << ' ';
+				}
+				cout << endl;
+
+				for (auto x : q.front() -> child)
+				{
+					q.push(x);
+				}
+
+				q.pop();
+			}
+		}
+
 };
 
 int main() {
@@ -223,7 +394,13 @@ int main() {
 
 	graph -> createEliminationOrder();
 
-	graph -> showEliminationOrder();
+	dTree* tree = new dTree(&graph);
+
+	// graph -> showEliminationOrder();
+	tree -> createCompositionTree();
+
+	tree -> traversal();
+
 	// graph -> showFillIn();
 
 
