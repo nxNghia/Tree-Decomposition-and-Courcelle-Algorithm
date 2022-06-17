@@ -140,10 +140,21 @@ class Graph
 				vector<int> t (this -> vertices.size(), -1);
 				this -> k.push_back(t);
 			}
-			for (int i = 0; i < this -> vertices.size(); ++i)
+			for (auto x : this -> vertices)
 			{
-				this -> fillIn[i] = findFillIn (i, this -> vertices[i]);
+				cout << x.first << endl;
+				this -> fillIn[x.first] = findFillIn (x.first, x.second);
 			}
+
+			// for (auto x : this -> vertices)
+			// {
+			// 	cout << x.first << ": ";
+			// 	for (auto y : x.second)
+			// 	{
+			// 		cout << y << ' ';
+			// 	}
+			// 	cout << endl;
+			// }
 		}
 
 		void showFillIn ()
@@ -374,7 +385,7 @@ class dTree {
 				s.pop();
 			}
 
-			this -> createDotFile();
+			// this -> createDotFile();
 		}
 
 		void traversal ()
@@ -403,34 +414,48 @@ class dTree {
 };
 
 int main() {
-	ifstream f("input.txt");
+	ifstream f("input3.txt");
 	int index;
 	int num = 0;
 	int row;
 
 	Graph* graph = new Graph();
 
-	while (f >> index)
+	// while (f >> index)
+	// {
+	// 	if (num == 0)
+	// 	{
+	// 		row = index;
+
+	// 		graph -> addVertice(row, -1);
+
+	// 		f >> num;
+	// 	}else{
+	// 		--num;
+
+	// 		graph -> addVertice(index, row);
+	// 	}
+	// }
+
+	while (!f.eof())
 	{
-		if (num == 0)
-		{
-			row = index;
+		int node1;
+		int node2;
+		f >> node1 >> node2;
 
-			graph -> addVertice(row, -1);
+		cout << node1 << ' ' << node2 << endl;
+		graph -> addVertice(node1, node2);
+		graph -> addVertice(node2, node1);
 
-			f >> num;
-		}else{
-			--num;
-
-			graph -> addVertice(index, row);
-		}
 	}
 
 	f.close();
 
+	// cout << graph -> vertices.size() << endl;
+
 	graph -> createFillIn();
-	graph -> createEliminationOrder();
+	// graph -> createEliminationOrder();
 
 	dTree* tree = new dTree(&graph);
-	tree -> createCompositionTree();
+	// tree -> createCompositionTree();
 }
