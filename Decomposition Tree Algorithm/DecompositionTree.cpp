@@ -6,6 +6,7 @@
 #include <set>
 #include <stack>
 #include <algorithm>
+#include <string>
 
 using namespace std;
 
@@ -56,9 +57,9 @@ class Graph
 	public:
 		map<int, vector<int>> vertices;
 		map<int, int> fillIn;
-		vector<vector<int>> k;
+		map<int, vector<int>> k;
 		vector<int> eliminationOrder;
-		vector<int> revert;
+		map<int, int> revert;
 
 		void addVertice (int index, int parent)
 		{
@@ -120,14 +121,13 @@ class Graph
 		{
 			int edges = 0;
 
-			for (int i = 0; i < adjencies.size(); i++)
+			for (auto x : adjencies)
 			{
-				vector<int> _adjencies_ = this -> getVertex(adjencies[i]);
+				vector<int> _adjencies_ = this -> getVertex(x);
 				vector<int> common = findCommon(adjencies, _adjencies_);
 
 				edges += common.size();
-
-				this -> k[adjencies[i]][index] = adjencies.size() - common.size() - 1;
+				this -> k[x][index] = adjencies.size() - common.size() - 1;
 			}
 
 			return adjencies.size() * (adjencies.size() - 1) / 2 - edges / 2;
@@ -135,26 +135,20 @@ class Graph
 
 		void createFillIn ()
 		{
-			for (int i = 0; i < this -> vertices.size(); ++i)
-			{
-				vector<int> t (this -> vertices.size(), -1);
-				this -> k.push_back(t);
-			}
+			map<int, vector<int>>::iterator it;
+			it = this -> vertices.end();
+			--it;
+
 			for (auto x : this -> vertices)
 			{
-				cout << x.first << endl;
-				this -> fillIn[x.first] = findFillIn (x.first, x.second);
+				vector<int> t (it -> first + 1, -1);
+				this -> k[x.first] = t;
 			}
 
-			// for (auto x : this -> vertices)
-			// {
-			// 	cout << x.first << ": ";
-			// 	for (auto y : x.second)
-			// 	{
-			// 		cout << y << ' ';
-			// 	}
-			// 	cout << endl;
-			// }
+			for (auto x : this -> vertices)
+			{
+				this -> fillIn[x.first] = findFillIn(x.first, x.second);
+			}
 		}
 
 		void showFillIn ()
@@ -178,19 +172,20 @@ class Graph
 		{
 			int result = -1;
 
-			for (int i = 0; i < this -> fillIn.size(); ++i)
+			for (auto x : this -> fillIn)
 			{
-				if (marked.count(i) != 0)
+				if (marked.count(x.first) != 0)
 					continue;
 				else
-					result = i;
+					result = x.first;
 
-				if (this -> fillIn[i] == 0 && marked.count(i) == 0)
-					return i;
-				if (this -> fillIn[i] <= this -> fillIn[result])
+				if (x.second == 0 && marked.count(x.first) == 0)
+					return x.first;
+
+				if (x.second <= this -> fillIn[result])
 				{
-					if (marked.count(i) == 0)
-						result = i;
+					if (marked.count(x.first) == 0)
+						result = x.first;
 				}
 			}
 
@@ -199,26 +194,26 @@ class Graph
 
 		void createEliminationOrder ()
 		{
-			this -> revert.assign(this -> vertices.size(), 0);
+			for (auto x : this -> vertices)
+				this -> revert[x.first] = 0;
+
 			set<int> marked;
 			int count = 0;
 
-			while (marked.size() != this -> vertices.size() && count != 10)
+			while (marked.size() != this -> vertices.size())
 			{
 				int minIndex = this -> getMin(marked);
 
-				for (int i = 0; i < this -> vertices.size(); ++i)
+				for (auto x : this -> vertices)
 				{
-					if (this -> k[minIndex][i] != -1 && marked.count(minIndex) == 0)
+					if (this -> k[minIndex][x.first] != -1 && marked.count(minIndex) == 0)
 					{
-						this -> fillIn[i] -= this -> k[minIndex][i];
+						this -> fillIn[x.first] -= this -> k[minIndex][x.first];
 
-						for (int j = 0; j < this -> vertices.size(); ++j)
+						for (auto y : this -> vertices)
 						{
-							if (this -> k[j][i] != -1 && this -> k[j][minIndex] == -1 && marked.count(j) == 0)
-							{
-								this -> k[j][i] -= 1;
-							}
+							if (this -> k[y.first][x.first] != -1 && this -> k[y.first][minIndex] == -1 && marked.count(y.first) == 0)
+								this -> k[y.first][x.first] -= 1;
 						}
 					}
 				}
@@ -250,6 +245,7 @@ class dTree {
 	public:
 		Graph** graph;
 		dNode* root;
+		vector<dNode*> roots;
 
 		dTree (Graph** graph)
 		{
@@ -258,11 +254,20 @@ class dTree {
 
 		void addVertice (int p, int newNode, vector<int> other)
 		{
-			dNode* parent = this -> getNode(this -> root, p);
+			dNode* parent = NULL;
+
+			for (auto x : this -> roots)
+			{
+				parent = this -> getNode(x, p);
+				if (parent != NULL)
+					break;
+			}
 
 			if (parent == NULL)
 			{
-				this -> root = new dNode(parent, newNode, other);
+				dNode* newRoot = new dNode(parent, newNode, other);
+				this -> root = newRoot;
+				this -> roots.push_back(newRoot);
 			} else {
 				dNode* newdNode = new dNode(parent, newNode, other);
 
@@ -272,52 +277,56 @@ class dTree {
 
 		void createDotFile ()
 		{
-			dNode* tree = this -> root;
 			ofstream file;
 			file.open("result.dot");
 
 			file << "graph result {" << endl;
 
-			queue<dNode*> q;
 
-			q.push(tree);
-
-			while (!q.empty())
+			for (auto x : this -> roots)
 			{
-				string line;
-				line += "	";
-				line.append(1, (char)('A' + q.front() -> id));
-				line += "[label=";
-				if (!q.front() -> block.empty())
-					line += "\"";
-				for (auto x : q.front() -> block)
+				dNode* tree = x;
+				queue<dNode*> q;
+				q.push(tree);
+
+				while (!q.empty())
 				{
-					line.append(1, (char)('A' + x));
-					line += " ";
-				}
-
-				line.pop_back();
-
-				line += "\"]";
-
-				file << line << ";" << endl;
-
-				line.clear();
-
-				for (auto x : q.front() -> child)
-				{
-
+					string line;
 					line += "	";
-					line.append(1, (char)(q.front() -> id + 'A'));
-					line += " -- ";
-					line.append(1, (char)(x -> id + 'A'));
-					file << line << ";" << endl;
-					line.clear();
-					q.push(x);
-				}
+					line += to_string(q.front() -> id);
+					line += "[label=";
+					if (!q.front() -> block.empty())
+						line += "\"";
+					for (auto x : q.front() -> block)
+					{
+						line += to_string(x);
+						line += " ";
+					}
 
-				q.pop();
+					line.pop_back();
+
+					line += "\"]";
+
+					file << line << ";" << endl;
+
+					line.clear();
+
+					for (auto x : q.front() -> child)
+					{
+
+						line += "	";
+						line += to_string(q.front() -> id);
+						line += " -- ";
+						line += to_string(x -> id);
+						file << line << ";" << endl;
+						line.clear();
+						q.push(x);
+					}
+
+					q.pop();
+				}				
 			}
+
 
 			file << '}' << endl;
 		}
@@ -350,6 +359,7 @@ class dTree {
 			vector<int> existed;
 			stack<int> s;
 			Graph _graph_ = **(this -> graph);
+			int minWidth = 1;
 
 			for (auto x : _graph_.eliminationOrder)
 				s.push(x);
@@ -367,25 +377,42 @@ class dTree {
 
 				vector<int> common = findCommon(adjencies1, existed);
 
-				int minVertice = common[0];
-				int minValue = _graph_.revert[minVertice];
-
-				for (auto x : common)
+				if (common.size() == 0)
 				{
-					if (minValue > _graph_.revert[x])
+					this -> addVertice(-1, top, common);
+				} else {
+					int minVertice = common[0];
+					int minValue = _graph_.revert[minVertice];
+
+					for (auto x : common)
 					{
-						minValue = _graph_.revert[x];
-						minVertice = x;
+						if (minValue > _graph_.revert[x])
+						{
+							minValue = _graph_.revert[x];
+							minVertice = x;
+						}
 					}
+
+					this -> addVertice(minVertice, top, common);
 				}
 
-				this -> addVertice(minVertice, top, common);
+				if (common.size() > minWidth)
+				{
+					for (auto x : common)
+						cout << x << ' ';
+					cout << endl;
+					cout << common.size() << endl;
+					cout << "-----------------------" << endl;
+					minWidth = common.size();
+				}
 
 				existed.push_back(top);
 				s.pop();
 			}
 
-			// this -> createDotFile();
+			cout << minWidth << endl;
+
+			this -> createDotFile();
 		}
 
 		void traversal ()
@@ -418,32 +445,16 @@ int main() {
 	int index;
 	int num = 0;
 	int row;
+	int node1, node2;
 
 	Graph* graph = new Graph();
 
-	// while (f >> index)
-	// {
-	// 	if (num == 0)
-	// 	{
-	// 		row = index;
-
-	// 		graph -> addVertice(row, -1);
-
-	// 		f >> num;
-	// 	}else{
-	// 		--num;
-
-	// 		graph -> addVertice(index, row);
-	// 	}
-	// }
-
 	while (!f.eof())
 	{
-		int node1;
-		int node2;
-		f >> node1 >> node2;
+		if (f.eof())
+			break;
 
-		cout << node1 << ' ' << node2 << endl;
+		f >> node1 >> node2;
 		graph -> addVertice(node1, node2);
 		graph -> addVertice(node2, node1);
 
@@ -451,11 +462,9 @@ int main() {
 
 	f.close();
 
-	// cout << graph -> vertices.size() << endl;
-
 	graph -> createFillIn();
-	// graph -> createEliminationOrder();
+	graph -> createEliminationOrder();
 
 	dTree* tree = new dTree(&graph);
-	// tree -> createCompositionTree();
+	tree -> createCompositionTree();
 }
