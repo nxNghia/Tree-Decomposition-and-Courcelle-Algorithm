@@ -1,0 +1,1 @@
+This repository is about my first graduation research in my fourth year at HUST. It's about Tree Decomposition's problem. Basically, this algorithm is about grouping some of vertices from a given graph to form a bigger vertice. From those new vertices we have a tree-like graph so that we are able to solve some NP problem in a relatively efficient way.
