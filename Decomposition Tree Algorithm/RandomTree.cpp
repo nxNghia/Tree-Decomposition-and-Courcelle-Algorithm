@@ -8,6 +8,9 @@
 
 using namespace std;
 
+const string outputFile = "input3.txt";
+const string outputDotFile = "input3.dot";
+
 int convertToInt (const char* str)
 {
 	int result = 0;
@@ -31,8 +34,8 @@ int main(int argc, const char* argv[])
 	ofstream file;
 	ofstream file2;
 
-	file.open("input3.dot");
-	file2.open("input3.txt");
+	file.open(outputDotFile);
+	file2.open(outputFile);
 
 	file << "graph input {" << endl;
 
@@ -58,4 +61,6 @@ int main(int argc, const char* argv[])
 	file << "}" << endl;
 
 	file.close();
+
+	cout << "Data is stored in " << outputFile << endl;
 }
