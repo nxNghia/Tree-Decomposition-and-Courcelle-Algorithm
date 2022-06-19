@@ -4,30 +4,22 @@
 #include <stdlib.h>
 #include <cstring>
 
-#define PROP 10
-
 using namespace std;
 
-const string outputFile = "input3.txt";
-const string outputDotFile = "input3.dot";
-
-int convertToInt (const char* str)
-{
-	int result = 0;
-	for (int i = 0; i < strlen(str); ++i)
-	{
-		result *= 10;
-		result += str[i] - '0';
-	}
-
-	return result;
-}
+const string outputFile = "input.txt";
+const string outputDotFile = "input.dot";
 
 int main(int argc, const char* argv[])
 {
-	if (argc != 2)
+	if (argc != 3)
 	{
-		cout << "Need number of vertices" << endl;
+		cout << "Insufficient parameters" << endl;
+		return 0;
+	}
+
+	if (stod(argv[2]) > 1 || stod(argv[2]) <= 0)
+	{
+		cout << "Parameter 2 has to be between 0 to 1" << endl;
 		return 0;
 	}
 
@@ -37,9 +29,11 @@ int main(int argc, const char* argv[])
 	file.open(outputDotFile);
 	file2.open(outputFile);
 
+	cout << "Create a graph with " << argv[1] << " vertices and propability of " << stod(argv[2]) * 100 << "% having edge between 2 vertices" << endl;
+
 	file << "graph input {" << endl;
 
-	int size = convertToInt(argv[1]);
+	int size = stoi(argv[1]);
 	srand(time(NULL));
 
 	for (int i = 0; i < size; i++)
@@ -48,7 +42,7 @@ int main(int argc, const char* argv[])
 		{
 			if (i != j)
 			{
-				int randomNumber = rand() % PROP;
+				int randomNumber = rand() % (int)(1 / stod(argv[2]));
 				if (randomNumber == 0)
 				{
 					file << "	" << i << " -- " << j << endl;

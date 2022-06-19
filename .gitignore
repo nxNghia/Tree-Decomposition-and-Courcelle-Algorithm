@@ -14,6 +14,7 @@ Independent\ set/Maximum\ Weight\ Independent\ Set\ On\ Tree/maxWeightIndependen
 Independent\ set/Maximum\ Weight\ Independent\ Set\ On\ Tree/input.txt
 Decomposition\ Tree\ Algorithm/DecompositionTree.o
 Decomposition\ Tree\ Algorithm/DecompositionTree
-Decomposition\ Tree\ Algorithm/input.txt
+Decomposition\ Tree\ Algorithm/*.txt
+Decomposition\ Tree\ Algorithm/*.dot
+Decomposition\ Tree\ Algorithm/RandomTree
 *.pdf
-*.dot

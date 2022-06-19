@@ -101,7 +101,7 @@ void Graph::showFillIn ()
 {
 	for (int i = 0; i < this -> fillIn.size(); ++i)
 	{
-		std::cout << (char)(i + 'A') << ' ' << this -> fillIn[i] << std::endl;
+		std::cout << i << ": " << this -> fillIn[i] << std::endl;
 	}
 }
 
@@ -123,17 +123,20 @@ int Graph::getMin (std::set<int> marked)
 		if (marked.count(x.first) != 0)
 			continue;
 		else
-			result = x.first;
+			if (result == -1)
+				result = x.first;
 
 		if (x.second == 0 && marked.count(x.first) == 0)
 			return x.first;
 
-		if (x.second <= this -> fillIn[result])
+		if (x.second < this -> fillIn[result])
 		{
 			if (marked.count(x.first) == 0)
 				result = x.first;
 		}
+		// std::cout << result << ' ';
 	}
+	// std::cout << std::endl;
 
 	return result;
 }
@@ -149,6 +152,7 @@ void Graph::createEliminationOrder ()
 	while (marked.size() != this -> vertices.size())
 	{
 		int minIndex = this -> getMin(marked);
+		// std::cout << minIndex << std::endl;
 
 		for (auto x : this -> vertices)
 		{
@@ -163,6 +167,9 @@ void Graph::createEliminationOrder ()
 				}
 			}
 		}
+
+		// this -> showFillIn();
+		// std::cout << "----------" << std::endl;
 
 		this -> revert[minIndex] = count;
 		++count;

@@ -133,6 +133,9 @@ void dTree::createCompositionTree ()
 	existed.push_back(s.top());
 	s.pop();
 
+	// for (auto x : _graph_.revert)
+	// 	std::cout << x.first << ": " << x.second << std::endl;
+
 	while (!s.empty())
 	{
 		int top = s.top();
@@ -147,6 +150,8 @@ void dTree::createCompositionTree ()
 		} else {
 			int minVertice = common[0];
 			int minValue = _graph_.revert[minVertice];
+
+			// std::cout << minVertice << '-' << minValue << std::endl;
 
 			for (auto x : common)
 			{
@@ -170,7 +175,7 @@ void dTree::createCompositionTree ()
 		s.pop();
 	}
 
-	std::cout << this -> minWidth << ' ' << this -> minId << std::endl;
+	std::cout << "Tree width: " << this -> minWidth << std::endl;
 
 	this -> createDotFile();
 }

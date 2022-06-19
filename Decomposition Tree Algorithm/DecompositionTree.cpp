@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <ctime>
 #include "./lib/graph.h"
 #include "./lib/dTree.h"
 
@@ -22,8 +23,9 @@ int main(int argc, const char** argv) {
 
 	int index;
 	int num = 0;
-	int row;
+	int edges = 0;
 	int node1, node2;
+	double duration;
 
 	Graph* graph = new Graph();
 
@@ -31,13 +33,25 @@ int main(int argc, const char** argv) {
 	{
 		graph -> addVertice(node1, node2);
 		graph -> addVertice(node2, node1);
+		++edges;
 	}
+
+	cout << graph -> vertices.size() << " vertices" << endl;
+	cout << edges << " edges" << endl;
 
 	f.close();
 
+	clock_t start = clock();
 	graph -> createFillIn();
+	graph -> showFillIn();
 	graph -> createEliminationOrder();
+
+	for (auto x : graph -> eliminationOrder)
+		cout << x << ' ';
+	cout << endl;
+
 
 	dTree* tree = new dTree(&graph);
 	tree -> createCompositionTree();
+	cout << "Time: " << (clock() - start) / (double) CLOCKS_PER_SEC << 's' << endl;
 }
